@@ -2,9 +2,12 @@ import React, {useEffect, useState} from "react";
 import ScrollToBottom from "react-scroll-to-bottom";
 
 function Chat({socket, username, room}) {
+    //Allows different constants to edit themselves using useState.
     const [currentMessage, setCurrentMessage] = useState("");
     const [messageList, setMessageList] = useState([]);
     
+    //Creates sendMessage function in order to send the currentMessage to the server.
+    //Once the client has finished sending the message, updates messageList and sets message bar back to blank.
     const sendMessage = async () => {
         if (currentMessage !== "") {
             const messageData = {
@@ -20,6 +23,7 @@ function Chat({socket, username, room}) {
         }
     };
 
+    //useEffect function checks if the server has received any new messages, and if so, updates the messageList with the new message.
     useEffect(() => {
         socket.on("receive_message", (data) => {
             console.log(data);
@@ -27,6 +31,10 @@ function Chat({socket, username, room}) {
         })
     }, [socket]);
 
+    //CSS with a nifty scroll bar to prevent overflow.
+    //Messages also contain an author and time property.
+    //onChange function updates currentMessage every time the message is changed.
+    //onKeyUp function sends message if enter key is released.
     return (
         <div className = "chat-window">
             <div className = "chat-header">
@@ -35,7 +43,7 @@ function Chat({socket, username, room}) {
             <div className = "chat-body">
                 <ScrollToBottom className = "message-container">
                     {messageList.map((messageContent) => {
-                        return <div className = "message" id = {username === messageContent.author ? "you" : "other"}>
+                        return (<div className = "message">
                             <div>
                                 <div className = "message-content">
                                     <p>{messageContent.message}</p>
@@ -45,7 +53,7 @@ function Chat({socket, username, room}) {
                                     <p id = "author">{messageContent.author}</p>
                                 </div>
                             </div>
-                        </div>
+                        </div>)
                     })}
                 </ScrollToBottom>
             </div>
@@ -53,11 +61,11 @@ function Chat({socket, username, room}) {
                 <input 
                     type = "text" 
                     value = {currentMessage}
-                    placeholder = "Message"
+                    placeholder = "Message..."
                     onChange = {(event) => {
                         setCurrentMessage(event.target.value);
                     }}
-                    onKeyPress = {(event) => {
+                    onKeyUp = {(event) => {
                         event.key === "Enter" && sendMessage();
                     }}
                 />
