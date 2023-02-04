@@ -7,7 +7,7 @@ const {Server} = require("socket.io");
 //Tells browser which places it should allow data to be transmitted to and from the domain.
 app.use(cors());
 
-//Creates a server at localhost.
+//Creates a server at the specified localhost port.
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
@@ -17,6 +17,7 @@ const io = new Server(server, {
 });
 
 //Socket allows for communication between client and server.
+//Every time a user connects to the server, sends connection message through socket, which enables the rest of the functions.
 io.on("connection", (socket) => {
     console.log("New User Connected. id: " + socket.id);
 
