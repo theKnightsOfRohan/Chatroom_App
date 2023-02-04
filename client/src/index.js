@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
-//Render the App function in the webpage.
+//Render the App in the webpage.
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

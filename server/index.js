@@ -23,9 +23,9 @@ io.on("connection", (socket) => {
     //Server listens to join-room event, and uses sent data from client to join the room.
     //ID is specific random id given to user, and data is the name of the room.
     socket.on("join_room", (data) => {
-        socket.join(data)
+        socket.join(data);
 
-        console.log("User with ID " + socket.id + " joined room " + data)
+        console.log("User with ID " + socket.id + " joined room " + data);
     });
 
     //Server listens to join-room event from any client, and uses sent data to send to all members of the room.
