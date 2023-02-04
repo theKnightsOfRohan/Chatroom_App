@@ -7,7 +7,7 @@ function Chat({socket, username, room}) {
     const [messageList, setMessageList] = useState([]);
     
     //Creates sendMessage function in order to send the currentMessage to the server.
-    //Once the client has finished sending the message, updates messageList and sets message bar back to blank.
+    //Once the client has finished sending the message, updates messageList array and sets message bar back to blank.
     const sendMessage = async () => {
         if (currentMessage !== "") {
             const messageData = {

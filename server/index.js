@@ -16,7 +16,7 @@ const io = new Server(server, {
     },
 });
 
-//Socket in io allows for communication between client and server.
+//Socket allows for communication between client and server.
 io.on("connection", (socket) => {
     console.log("New User Connected. id: " + socket.id);
 
@@ -28,7 +28,7 @@ io.on("connection", (socket) => {
         console.log("User with ID " + socket.id + " joined room " + data);
     });
 
-    //Server listens to join-room event from any client, and uses sent data to send to all members of the room.
+    //Server listens to send-message event from any client, and uses sent data to send to all members of the room.
     socket.on("send_message", (data) => {
         socket.to(data.room).emit("receive_message", data);
         
@@ -36,7 +36,7 @@ io.on("connection", (socket) => {
     });
 
     //Server listens to disconnect event from any client. 
-    //Could use further improvement, such as addition of chat notifications when use disconnects.
+    //Could use further improvement, such as addition of chat notifications when user disconnects.
     socket.on("disconnect", () => {
         console.log("User disconnected. id: ", socket.id);
     });

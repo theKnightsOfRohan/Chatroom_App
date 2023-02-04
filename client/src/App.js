@@ -15,13 +15,12 @@ function App() {
   //joinRoom function allows client to notify server that the user has joined a room. Also enables chat.
   const joinRoom = () => {
     if (username !== "" && room !== "") {
-
       socket.emit("join_room", room);
       setShowChat(true);
     }
   };
 
-  //Different states for client. If the user has not joined a room, it will show the join chat interface.
+  //Different states for client. If the user has not joined a room, it will show the join interface.
   //If the user has joined a room, it will show the chat interface.
   return (
     <div className="App">
