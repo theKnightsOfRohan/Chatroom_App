@@ -25,10 +25,16 @@ function Chat({socket, username, room}) {
 
     //useEffect function checks if the server has received any new messages, and if so, updates the messageList with the new message.
     useEffect(() => {
+        //Server sends past messages to client.
+        socket.on("past_messages", (pastMessages) => {
+            setMessageList(pastMessages);
+            console.log("Received past messages: " + pastMessages);
+        });
+
         socket.on("receive_message", (data) => {
             console.log(data);
             setMessageList((list) => [...list, data]);
-        })
+        });
     }, [socket]);
 
     //CSS with a nifty scroll bar to prevent overflow.

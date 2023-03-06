@@ -1,10 +1,10 @@
 import "./App.css";
 import io from "socket.io-client";
-import { useState } from "react";
+import {useState} from "react";
 import Chat from './Chat';
 
 //Creates socket that connects app to client at 3001.
-const socket = io.connect("http://localhost:3001");
+const socket = io.connect("http://localhost:3002");
 
 function App() {
   //useState function allows constants to change based on user input.
@@ -16,13 +16,6 @@ function App() {
   const joinRoom = () => {
     if (username !== "" && room !== "") {
       socket.emit("join_room", room);
-
-      //Server sends past messages to client.
-      socket.on("past_messages", (pastMessages) => {
-        Chat.setMessageList(pastMessages)
-        console.log(pastMessages);
-      });
-
       setShowChat(true);
     }
   };

@@ -13,7 +13,7 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:3000",
+        origin: "http://localhost:3001",
         methods: ["GET", "POST"],
     },
 });
@@ -32,7 +32,8 @@ io.on("connection", (socket) => {
         if (!pastMessageDatabase.has(room)) {
             pastMessageDatabase.set(room, []);
         }
-        socket.to(socket.id).emit("past_messages", pastMessageDatabase.get(room));
+
+        socket.emit("past_messages", pastMessageDatabase.get(room));
 
         console.log("User with ID " + socket.id + " joined room " + room);
     });
@@ -44,7 +45,7 @@ io.on("connection", (socket) => {
         }
         socket.to(messageData.room).emit("receive_message", messageData);
         
-        console.log(messageData);
+        console.log(pastMessageDatabase.get(messageData.room));
     });
 
     //Server listens to disconnect event from any client. 
@@ -55,6 +56,6 @@ io.on("connection", (socket) => {
 });
 
 //Checks if client is running in port 3001.
-server.listen(3001, () => {
+server.listen(3002, () => {
     console.log("Running");
 });
