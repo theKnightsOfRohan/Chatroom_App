@@ -33,6 +33,7 @@ io.on("connection", (socket) => {
             pastMessageDatabase.set(room, []);
         }
 
+        //Sends the message history to the new client.
         socket.emit("past_messages", pastMessageDatabase.get(room));
 
         console.log("User with ID " + socket.id + " joined room " + room);
@@ -40,9 +41,13 @@ io.on("connection", (socket) => {
 
     //Server listens to send-message event from any client, and uses sent data to send to all members of the room.
     socket.on("send_message", (messageData) => {
+
+        //Adds message to message history.
         if (pastMessageDatabase.has(messageData.room)) {
             pastMessageDatabase.get(messageData.room).push(messageData);
         }
+
+        //Sends message to all members of the room.
         socket.to(messageData.room).emit("receive_message", messageData);
         
         console.log(pastMessageDatabase.get(messageData.room));

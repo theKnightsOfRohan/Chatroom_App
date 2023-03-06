@@ -17,7 +17,10 @@ function Chat({socket, username, room}) {
                 time: new Date(Date.now()).getHours() + ":" + new Date(Date.now()).getMinutes(),
             };
 
+            //Sends message to server.
             await socket.emit("send_message", messageData);
+
+            //Updates messageList.
             setMessageList((list) => [...list, messageData]);
             setCurrentMessage("");
         }
@@ -25,12 +28,13 @@ function Chat({socket, username, room}) {
 
     //useEffect function checks if the server has received any new messages, and if so, updates the messageList with the new message.
     useEffect(() => {
-        //Server sends past messages to client.
+        //Receives past messages from server.
         socket.on("past_messages", (pastMessages) => {
             setMessageList(pastMessages);
             console.log("Received past messages: " + pastMessages);
         });
 
+        //Receives new messages from server.
         socket.on("receive_message", (data) => {
             console.log(data);
             setMessageList((list) => [...list, data]);
