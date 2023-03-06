@@ -16,6 +16,13 @@ function App() {
   const joinRoom = () => {
     if (username !== "" && room !== "") {
       socket.emit("join_room", room);
+
+      //Server sends past messages to client.
+      socket.on("past_messages", (pastMessages) => {
+        Chat.setMessageList(pastMessages)
+        console.log(pastMessages);
+      });
+
       setShowChat(true);
     }
   };

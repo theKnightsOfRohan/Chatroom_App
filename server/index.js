@@ -4,6 +4,8 @@ const http = require("http");
 const cors = require("cors");
 const {Server} = require("socket.io");
 
+let pastMessageDatabase = new Map();
+
 //Tells browser which places it should allow data to be transmitted to and from the domain.
 app.use(cors());
 
@@ -23,17 +25,26 @@ io.on("connection", (socket) => {
 
     //Server listens to join-room event, and uses sent data from client to join the room.
     //ID is specific random id given to user, and data is the name of the room.
-    socket.on("join_room", (data) => {
-        socket.join(data);
+    socket.on("join_room", (room) => {
+        socket.join(room);
 
-        console.log("User with ID " + socket.id + " joined room " + data);
+        //Checks if the room has a message history, and if not, creates one.
+        if (!pastMessageDatabase.has(room)) {
+            pastMessageDatabase.set(room, []);
+        }
+        socket.to(socket.id).emit("past_messages", pastMessageDatabase.get(room));
+
+        console.log("User with ID " + socket.id + " joined room " + room);
     });
 
     //Server listens to send-message event from any client, and uses sent data to send to all members of the room.
-    socket.on("send_message", (data) => {
-        socket.to(data.room).emit("receive_message", data);
+    socket.on("send_message", (messageData) => {
+        if (pastMessageDatabase.has(messageData.room)) {
+            pastMessageDatabase.get(messageData.room).push(messageData);
+        }
+        socket.to(messageData.room).emit("receive_message", messageData);
         
-        console.log(data);
+        console.log(messageData);
     });
 
     //Server listens to disconnect event from any client. 
