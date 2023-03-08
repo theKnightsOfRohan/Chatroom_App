@@ -3,8 +3,8 @@ import io from "socket.io-client";
 import {useState} from "react";
 import Chat from './Chat';
 
-//Creates socket that connects app to client at 3001.
-const socket = io.connect("http://localhost:3002");
+//Connects client at port 3000 to server at port 3001.
+const socket = io.connect("http://localhost:3001");
 
 function App() {
   //useState function allows constants to change based on user input.
