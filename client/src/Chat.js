@@ -14,7 +14,7 @@ function Chat({socket, username, room}) {
                 room: room,
                 author: username,
                 message: currentMessage,
-                time: new Date(Date.now()).getHours() + ":" + new Date(Date.now()).getMinutes(),
+                time: new Date(Date.now()).getHours() + ":" + new Date(Date.now()).getMinutes() + ":" + new Date(Date.now()).getSeconds(),
             };
 
             //Sends message to server.

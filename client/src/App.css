@@ -113,7 +113,7 @@
 .chat-window .chat-header {
   height: 145px;
   border-radius: 6px;
-  background: #FFFFFF;
+  background-color: #F2F2F2;
   position: relative;
   cursor: pointer;
 }
@@ -128,7 +128,7 @@
 .chat-window .chat-body {
   height: 553px;
   border: 1px solid #ffffff;
-  background: #FFFFFF;
+  background-color: #F2F2F2;
   border-top: 1px solid #0000001f;
   position: relative;
 }

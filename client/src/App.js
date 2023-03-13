@@ -29,8 +29,8 @@ function App() {
 
     //joinRoom function allows client to notify server that the user has joined a room. Also enables chat.
     const joinRoom = (clickedChat) => {
-        socket.emit("join_room", clickedChat.room);
-        setRoom(clickedChat.room);
+        socket.emit("join_room", clickedChat.roomid);
+        setRoom(clickedChat.title);
         setShowChat(true);
     };
 
@@ -57,7 +57,7 @@ function App() {
                     <ScrollToBottom className="chat-select-container">
                         {ChatList.map((Chat) => (
                             <div className="chat-select-item">
-                                <button className="chat-select-button" onClick={() => joinRoom(Chat.room)}>
+                                <button className="chat-select-button" onClick={() => joinRoom(Chat.roomid)}>
                                     <div>
                                         <p className="chat-select-title">{Chat.title}</p>
                                     </div>

@@ -31,7 +31,7 @@ io.on("connection", (socket) => {
     console.log("New User Connected. id: " + socket.id);
 
     socket.on("get_chats", (userid) => {
-        pool.query("SELECT * FROM user_chat_perms_database WHERE userid = $1", [userid], (error, results) => {
+        pool.query("SELECT chats FROM user_chat_perms_database WHERE userid = $1", [userid], (error, results) => {
             try {
                 if (error) {
                     throw error;
@@ -39,7 +39,9 @@ io.on("connection", (socket) => {
 
                 const chatPermissions = results.rows[0].chats;
 
-                pool.query("SELECT * FROM chat_database WHERE chatid = ANY($1)", [chatPermissions], (error, results) => {
+                console.log(chatPermissions);
+
+                pool.query("SELECT * FROM chat_database WHERE roomid = ANY($1)", [chatPermissions], (error, results) => {
                     try {
                         if (error) {
                             throw error;
@@ -83,7 +85,7 @@ io.on("connection", (socket) => {
             }
         });
 
-        console.log("User with ID " + socket.id + " joined room " + room);
+        console.log("User with ID " + socket.id + " joined room " + roomid);
     });
 
     //Server listens to send-message event from any client, and uses sent data to send to all members of the room.
