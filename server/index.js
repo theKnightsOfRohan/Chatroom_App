@@ -3,6 +3,7 @@ const app = express();
 const http = require("http");
 const cors = require("cors");
 const {Server} = require("socket.io");
+const {Pool} = require("pg");
 
 //Tells browser which places it should allow data to be transmitted to and from the domain.
 app.use(cors());
@@ -16,85 +17,102 @@ const io = new Server(server, {
     },
 });
 
-//Database of rooms and their message history.
-let chatDatabase = new Map([
-    ["TC-0001", {
-        messageList: [{username: "User1", message: "Hello", room: "TC-0001"}, {username: "User1", message: "Hi", room: "TC-0001"}],
-        title: "Test Chat 1",
-    }],
-    ["TC-0002", {
-        messageList: [{username: "User1", message: "Hello", room: "TC-0001"}, {username: "User2", message: "Hi", room: "TC-0002"}],
-        title: "Test Chat 2",
-    }],
-    ["TC-0003", {
-        messageList: [{username: "User3", message: "Hello", room: "TC-0003"}, {username: "User1", message: "Hi", room: "TC-0003"}],
-        title: "Test Chat 3",
-    }],
-    ["TC-0004", {
-        messageList: [{username: "User2", message: "Hello", room: "TC-0004"}, {username: "User3", message: "Hi", room: "TC-0004"}],
-        title: "Test Chat 4",
-    }],
-    ["TC-0005", {
-        messageList: [{username: "User3", message: "Hello", room: "TC-0005"}, {username: "User3", message: "Hi", room: "TC-0005"}],
-        title: "Test Chat 5",
-    }],
-]);
-
-//Database of users and their permissions.
-let userPermsDatabase = new Map([
-    ["User1", ["TC-0001", "TC-0002", "TC-0003"]],
-    ["User2", ["TC-0002", "TC-0003", "TC-0004"]],
-    ["User3", ["TC-0003", "TC-0004", "TC-0005"]],
-]);
+const pool = new Pool({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'postgres',
+    password: 'Dadamndud3',
+    port: 5432,
+});
 
 //Socket allows for communication between client and server.
 //Every time a user connects to the server, sends connection message through socket, which enables the rest of the functions.
 io.on("connection", (socket) => {
     console.log("New User Connected. id: " + socket.id);
 
-    socket.on("get_chats", (username) => {
-        let tempChats = [];
-        const tempPermList = userPermsDatabase.get(username);
+    socket.on("get_chats", (userid) => {
+        pool.query("SELECT * FROM user_chat_perms_database WHERE userid = $1", [userid], (error, results) => {
+            try {
+                if (error) {
+                    throw error;
+                }
 
-        for (const tempRoom in tempPermList) {
-            let tempMessageListLength = chatDatabase.get(tempRoom).messageList.length;
+                const chatPermissions = results.rows[0].chats;
 
-            tempChats.push({
-                room: tempRoom,
-                title: chatDatabase.get(tempRoom).title,
-                mostRecentMessage: chatDatabase.get(tempRoom)[tempMessageListLength - 1].message,
-            });
-        }
+                pool.query("SELECT * FROM chat_database WHERE chatid = ANY($1)", [chatPermissions], (error, results) => {
+                    try {
+                        if (error) {
+                            throw error;
+                        }
 
-        socket.to(socket.id).emit("receive_chats", tempChats);
+                        let chatList = [];
+
+                        for (let i = 0; i < results.rows.length; i++) {
+                            chatList.push({
+                                roomid: results.rows[i].roomid,
+                                title: results.rows[i].roomname,
+                                mostRecentMessage: results.rows[i].previewmessage,
+                            });
+                        }
+
+                        socket.emit("receive_chats", chatList);
+                    } catch (error) {
+                        console.error(error);
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+            }
+        });
     });
 
     //Server listens to join-room event, and uses sent data from client to join the room.
     //ID is specific random id given to user, and data is the name of the room.
-    socket.on("join_room", (room) => {
-        socket.join(room);
+    socket.on("join_room", (roomid) => {
+        pool.query("SELECT jsonb_array_elements(messagelist) FROM chat_database WHERE roomid = $1", [roomid], (error, results) => {
+            try {
+                if (error) {
+                    throw error;
+                }
 
-        //Checks if the room has a message history, and if not, creates one.
-        if (!chatDatabase.has(room)) {
-            chatDatabase.set(room, []);
-        }
+                const chatMessages = results.rows[0].messagelist.map((message) => JSON.parse(message));
 
-        //Sends the message history to the new client.
-        socket.emit("past_messages", chatDatabase.get(room));
+                socket.emit("past_messages", chatMessages);
+            } catch (error) {
+                console.error(error);
+            }
+        });
 
         console.log("User with ID " + socket.id + " joined room " + room);
     });
 
     //Server listens to send-message event from any client, and uses sent data to send to all members of the room.
     socket.on("send_message", (messageData) => {
+        pool.query("SELECT messagelist FROM chat_database WHERE roomid = $1", [messageData.roomid], (error, results) => {
+            try {
+                if (error) {
+                    throw error;
+                }
 
-        //Adds message to message history.
-        chatDatabase.get(messageData.room).push(messageData);
+                const messageList = results.rows[0].messagelist;
 
-        //Sends message to all members of the room.
-        socket.to(messageData.room).emit("receive_message", messageData);
-        
-        console.log(chatDatabase.get(messageData.room));
+                messageList.push(JSON.stringify(messageData));
+
+                pool.query("UPDATE chat_database SET messagelist = $1 WHERE roomid = $2", [messageList, messageData.roomid], (error, results) => {
+                    try {
+                        if (error) {
+                            throw error;
+                        }
+
+                        io.to(messageData.roomid).emit("receive_message", messageData);
+                    } catch (error) {
+                        console.error(error);
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+            }
+        });
     });
 
     //Server listens to disconnect event from any client. 

@@ -49,7 +49,7 @@ function App() {
                                 setUsername(event.target.value);
                         }}
                         onKeyUp = {(event) => {
-                            event.key === "Enter" && getChats();}}
+                            event.key === "Enter" && getChats(username);}}
                         >
                         </input>
                     </div>
@@ -57,7 +57,7 @@ function App() {
                     <ScrollToBottom className="chat-select-container">
                         {ChatList.map((Chat) => (
                             <div className="chat-select-item">
-                                <button className="chat-select-button" onClick={() => joinRoom(Chat)}>
+                                <button className="chat-select-button" onClick={() => joinRoom(Chat.room)}>
                                     <div>
                                         <p className="chat-select-title">{Chat.title}</p>
                                     </div>
